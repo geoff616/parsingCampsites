@@ -8,25 +8,28 @@ urlsToQuery="campsitesGoogleMapsURLS.csv"
 googleMapResponses="campsitesLocationInfo.csv"
 secondPassAtGoogleMapQueries="campsitesLocationInfo2.csv"
 
-# download latest markdown file
-curl https://raw.githubusercontent.com/FreeCodeCamp/wiki/master/List-of-Free-Code-Camp-city-based-Campsites.md > $wikiFile
-
-# parse markdown file 
-awk -f parseCampsites $wikiFile > $parsedWiki
-
-#generate urls from file
-
-awk -f parseCampsiteURLs $parsedWiki > $urlsToQuery
-
-# query urls and save responses
-# NOTE: There is no error handling for this, but can count the number of status "OK"s
-# failed responses have line endings that match "|$" regex
-while read line ; do
-  url=`echo $line | awk -F"|" '{print $5}'`
-  resp=$(curl -N --globoff $url | tr -d "\n")
-  echo $line"|"$resp >> $googleMapResponses
-done < $urlsToQuery
-
+## # download latest markdown file
+## curl https://raw.githubusercontent.com/FreeCodeCamp/wiki/master/List-of-Free-Code-Camp-city-based-Campsites.md > $wikiFile
+## 
+## # parse markdown file 
+## awk -f parseCampsites $wikiFile > $parsedWiki
+## 
+## #generate urls from file
+## 
+## awk -f parseCampsiteURLs $parsedWiki > $urlsToQuery
+## 
+## # query urls and save responses
+## # NOTE: There is no error handling for this, but can count the number of status "OK"s
+## # failed responses have line endings that match "|$" regex
+## while read line ; do
+##   url=`echo $line | awk -F"|" '{print $5}'`
+##   resp=$(curl -N --globoff $url | tr -d "\n")
+##   echo $line"|"$resp >> $googleMapResponses
+## done < $urlsToQuery
+## 
+echo "campsites that failed google maps query:"
+count=$(cat $googleMapResponses | grep \|$ | wc -l)
+echo $count
 # retry failed queries - where last character in the line is a pipe
 # NOTE: only had a handfull ~5 out of 1000+ fail, and this was simple fix
 while read line ; do
@@ -35,8 +38,11 @@ while read line ; do
   then
     url=`echo $line | awk -F"|" '{print $5}'`
     resp=$(curl -N --globoff $url | tr -d "\n")
-    echo $line"|"$resp >> $secondPassAtGoogleMapQueries
+    echo $line$resp >> $secondPassAtGoogleMapQueries
   else 
     echo $line >> $secondPassAtGoogleMapQueries
   fi
 done < $googleMapResponses
+echo "campsites that failed second pass at google maps query:"
+count=$(cat $secondPassAtGoogleMapQueries | grep \|$ | wc -l)
+echo $count
