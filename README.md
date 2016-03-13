@@ -4,6 +4,7 @@ This repo contains a set of scripts that migrate data contained in the FreeCodeC
 
 ##How it works:
 The main script `generateCampsites.sh` performs the following steps:
+
 1. Download the Markdown page with the latest list of campsites from the DCC Wiki with `cURL`
 2. Run `parseCampsites.awk` to create a csv from the Markdown page
 3. Run `parseCampsiteURLs.awk` to create the URLs needed to request the location info from Google Maps
